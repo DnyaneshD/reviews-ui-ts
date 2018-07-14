@@ -1,0 +1,8 @@
+{
+    "compilerOptions":{
+        "jsx":"react",
+        "noImplicitAny": false,
+        "sourceMap": false,
+        "target": "es5" 
+    }
+}

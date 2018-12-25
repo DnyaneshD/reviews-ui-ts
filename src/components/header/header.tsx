@@ -1,7 +1,7 @@
 import * as React from "react";
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import Reviews from "../review/reviews";
-import AddReview from "../AddReview/AddReview";
+import AddReview from "../addReview/addReview";
 
 class Header extends React.Component {
   render() {

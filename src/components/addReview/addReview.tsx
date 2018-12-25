@@ -1,34 +1,50 @@
 import * as React from "react";
 import { connect } from "react-redux";
-import {
-  submitReviewsData,
-  changeProperty,
-  fetchReviewDetailsByReviewId
-} from "./actions";
 import { Grid, Row, Col, Button } from "react-bootstrap";
-import "./addReview.scss";
 import { withRouter } from "react-router-dom";
-import Comment from "../Comment/Comment";
 
-class AddReview extends React.Component<any, any> {
+import {
+  changeProperty,
+  submitReviewsData,
+  fetchReviewByReviewId
+} from "./actions";
+import "./addReviewStyles.scss";
+import Comment from "../Comment/Comment";
+import { ReviewModel } from "./reviewModel";
+import { fetchReviewDetails } from "./api";
+
+interface IReviewProps {
+  review: ReviewModel;
+  match: any;
+  socialReviews: any;
+  isShowAddCommentsComponent: null;
+}
+
+interface IReviewDispatchProps {
+  submitReviewDispatch: (url: string) => void;
+  changePropertyDispatch: (property: string, value: any) => void;
+  fetchReviewByReviewIdDispatch: (details: any) => any;
+}
+
+interface IReviewReduxProps extends IReviewProps, IReviewDispatchProps {}
+
+interface IReviewState {
+  showAddCommentsButton: boolean;
+}
+
+class AddReview extends React.Component<IReviewReduxProps, IReviewState> {
   constructor(props) {
     super(props);
     this.state = {
-      showAddCommentsButton: true
+      showAddCommentsButton: null
     };
   }
-
-  private handleSubmitReview = event => {
-    this.props.submitReview("http://localhost:3002/api/reviews");
-  };
-
-  private handleAddComments = event => {
-    this.props.changeProperty("isShowAddCommentsComponent", true);
-  };
-
-  componentWillMount() {
+  componentDidMount() {
     if (this.props.match.params.id !== "newReview") {
-      this.props.fetchReviewDetailsByReviewId(this.props.match.params.id);
+      fetchReviewDetails(this.props.match.params.id).then(details => {
+        this.props.fetchReviewByReviewIdDispatch(details);
+      });
+
       this.setState({
         showAddCommentsButton: true
       });
@@ -52,12 +68,13 @@ class AddReview extends React.Component<any, any> {
               <input
                 name="topic"
                 type="text"
-                value={this.props.topic}
+                value={this.props.review.topic}
                 onChange={this.handleChange.bind(this)}
                 placeholder="Give a nice title..."
               />
             </Col>
           </Row>
+
           <Row className="show-grid container">
             <Col xs={2} md={2}>
               Description
@@ -65,7 +82,7 @@ class AddReview extends React.Component<any, any> {
             <Col xs={10} md={10}>
               <textarea
                 name="description"
-                value={this.props.description}
+                value={this.props.review.authorReview}
                 onChange={this.handleChange.bind(this)}
                 placeholder="Write your own description do not copy paste..."
               />
@@ -99,8 +116,8 @@ class AddReview extends React.Component<any, any> {
           {this.props.isShowAddCommentsComponent ? <Comment /> : null}
           <Row className="show-grid container">
             <Col xs={10} md={10}>
-              {this.props.socialReviews
-                ? this.props.socialReviews.map(socialReview => {
+              {this.props.review.socialReviews
+                ? this.props.review.socialReviews.map(socialReview => {
                     const commentProps = {
                       key: socialReview.id,
                       Id: socialReview.id,
@@ -117,12 +134,37 @@ class AddReview extends React.Component<any, any> {
   }
 
   handleChange(e) {
-    this.props.changeProperty(e.target.name, e.target.value);
+    this.props.changePropertyDispatch(e.target.name, e.target.value);
   }
+
+  private handleSubmitReview = event => {
+    this.props.submitReviewDispatch("http://localhost:3000/api/reviews");
+  };
+
+  private handleAddComments = event => {
+    this.props.changePropertyDispatch("isShowAddCommentsComponent", true);
+  };
 }
 
-const mapStateToProps = props => {
+const mapStateToProps = (props: any): IReviewProps => {
+  const { review } = props.addReviewReducer;
+
+  const reviewProps: ReviewModel = new ReviewModel();
+  if (review) {
+    reviewProps.Id = review.Id;
+    reviewProps.topic = review.topic;
+    reviewProps.authorReview = review.autherReview;
+    reviewProps.isShowAddCommentsComponent = review.isShowAddCommentsComponent;
+    reviewProps.socialReviews = review.socialReviews;
+  }
+
   return {
+    review: reviewProps,
+    match: null,
+    socialReviews: null,
+    isShowAddCommentsComponent:
+      props.addReviewReducer.isShowAddCommentsComponent
+
     // Id: props.addReviewReducer.Id,
     // topic: props.addReviewReducer.topic,
     // description: props.addReviewReducer.description,
@@ -132,13 +174,13 @@ const mapStateToProps = props => {
   };
 };
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch): IReviewDispatchProps => {
   return {
-    changeProperty: (propertyKey, value) =>
+    changePropertyDispatch: (propertyKey, value) =>
       dispatch(changeProperty(propertyKey, value)),
-    submitReview: url => dispatch(submitReviewsData(url)),
-    fetchReviewDetailsByReviewId: reveiwId =>
-      dispatch(fetchReviewDetailsByReviewId(reveiwId))
+    submitReviewDispatch: url => dispatch(submitReviewsData(url)),
+    fetchReviewByReviewIdDispatch: details =>
+      dispatch(fetchReviewByReviewId(details))
   };
 };
 

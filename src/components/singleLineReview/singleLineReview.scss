@@ -1,9 +1,16 @@
-div.container {
+.container {
   margin: 12px;
-}
-div.left,
-div.right {
-  float: left;
-  padding: 0px;
-  margin: 5px;
+
+  p {
+    display: inline;
+  }
+  .right {
+    display: inline;
+    padding: 0px;
+    margin: 5px;
+  }
+  a {
+    color: blueviolet;
+    text-decoration: underline;
+  }
 }

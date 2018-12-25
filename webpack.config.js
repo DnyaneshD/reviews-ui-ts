@@ -11,7 +11,7 @@ const htmlPlugin = new HtmlWebPackPlugin({
 module.exports = {
   entry: "./src/index.tsx",
   output: {
-    filename: "bundle1.js",
+    filename: "bundle.js",
     path: path.resolve(__dirname, "dist")
   },
   devtool: "source-map",
@@ -33,6 +33,11 @@ module.exports = {
         ]
       }
     ]
+  },
+  devServer: {
+    inline: true,
+    port: 8000,
+    historyApiFallback: true
   },
   plugins: [htmlPlugin]
 };
